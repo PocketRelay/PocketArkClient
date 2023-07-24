@@ -21,8 +21,9 @@ fn main() {
         port: 443,
     });
 
-    // runtime.spawn(servers::certs::start_server());
+    runtime.spawn(servers::certs::start_server());
     runtime.spawn(servers::redirector::start_server());
+    runtime.spawn(servers::qos::start_server());
     runtime.block_on(servers::main::start_server());
 }
 

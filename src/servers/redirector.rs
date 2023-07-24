@@ -27,10 +27,8 @@ const CERTIFICATE: &[u8] = include_bytes!("../resources/identity/cert.der");
 const PRIVATE_KEY: &[u8] = include_bytes!("../resources/identity/key.pem");
 
 pub async fn start_server() {
-    let addr: SocketAddr = SocketAddr::V4(SocketAddrV4::new(
-        Ipv4Addr::new(0, 0, 0, 0),
-        REDIRECTOR_PORT,
-    ));
+    let addr: SocketAddr =
+        SocketAddr::V4(SocketAddrV4::new(Ipv4Addr::UNSPECIFIED, REDIRECTOR_PORT));
 
     let router = Router::new()
         .route("/redirector/getServerInstance", any(handle_get_instance))

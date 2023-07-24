@@ -12,3 +12,5 @@ pub const HOSTS_PATH: &str = "C:/Windows/System32/drivers/etc/hosts";
 pub const REDIRECTOR_PORT: u16 = 42230;
 /// The local proxy main server port
 pub const MAIN_PORT: u16 = 42231;
+/// The local qos server port
+pub const QOS_PORT: u16 = 42232;
