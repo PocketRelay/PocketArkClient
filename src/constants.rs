@@ -2,7 +2,7 @@
 pub const APP_VERSION: &str = env!("CARGO_PKG_VERSION");
 
 /// The host address to redirect in the hosts file
-pub const HOST_KEY: &str = "gosredirector.ea.com";
+pub const HOST_KEY: &str = "winter15.gosredirector.ea.com";
 /// Host address target (Localhost)
 pub const HOST_VALUE: &str = "127.0.0.1";
 /// The path to the system hosts file
