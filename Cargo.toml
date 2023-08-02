@@ -2,8 +2,15 @@
 name = "pocket-ark-client"
 version = "0.1.0"
 edition = "2021"
+build = "build.rs"
+description = "Client application for the Pocket Relay server"
+license = "MIT"
+keywords = ["EA", "PocketArk", "MassEffectAndromeda"]
+authors = ["Jacobtread <jacobtread@gmail.com>"]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+[build-dependencies]
+winres = "0.1"
 
 [dependencies]
 openssl-sys = "0.9"
@@ -38,7 +45,6 @@ local-ip-address = "0.5"
 version = "0.9"
 default-features = false
 features = ["image", "glow", "tokio"]
-optional = true
 
 # Native Windows GUI framework variant
 [dependencies.native-windows-gui]
