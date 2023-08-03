@@ -24,7 +24,7 @@ const CERTIFICATE: &[u8] = include_bytes!("../resources/identity/cert.der");
 const PRIVATE_KEY: &[u8] = include_bytes!("../resources/identity/key.pem");
 
 pub async fn start_server() {
-    let addr: SocketAddr = SocketAddr::V4(SocketAddrV4::new(Ipv4Addr::new(0, 0, 0, 0), 44325));
+    let addr: SocketAddr = SocketAddr::V4(SocketAddrV4::new(Ipv4Addr::UNSPECIFIED, 44325));
 
     let router = Router::new().layer(TraceLayer::new_for_http());
     let mut acceptor = SslAcceptor::mozilla_intermediate(SslMethod::tls_server()).unwrap();

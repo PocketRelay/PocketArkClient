@@ -34,6 +34,9 @@ pub fn init(_: tokio::runtime::Runtime) {
 struct App {
     lookup_result: LookupState,
     target: String,
+    username: String,
+    password: String,
+    state: AppState,
 }
 
 impl Drop for App {
@@ -42,11 +45,22 @@ impl Drop for App {
     }
 }
 
+#[derive(Debug, Clone)]
+enum AppState {
+    Default,
+    Login,
+    Create,
+}
+
 /// Messages used for updating the game state
 #[derive(Debug, Clone)]
 enum AppMessage {
     /// The redirector target address changed
     TargetChanged(String),
+
+    UsernameChanged(String),
+    PasswordChanged(String),
+
     /// The redirector target should be updated
     UpdateTarget,
     /// Display the patch game dialog asking the player to patch
@@ -55,6 +69,11 @@ enum AppMessage {
     RemovePatch,
     /// Message for setting the current lookup result state
     LookupState(LookupState),
+
+    AttemptLogin,
+    AttemptCreate,
+
+    SetState(AppState),
 }
 
 /// Different states that lookup process can be in
@@ -80,7 +99,10 @@ impl Application for App {
         (
             App {
                 lookup_result: LookupState::None,
-                target: "".to_string(),
+                target: String::new(),
+                state: AppState::Default,
+                username: String::new(),
+                password: String::new(),
             },
             Command::none(),
         )
@@ -136,18 +158,47 @@ impl Application for App {
                 Err(err) => show_error("Failed to remove patch", &err.to_string()),
             },
             // Lookup result changed
-            AppMessage::LookupState(value) => self.lookup_result = value,
+            AppMessage::LookupState(value) => {
+                if let LookupState::Success(_) = &value {
+                    self.state = AppState::Login;
+                }
+                self.lookup_result = value
+            }
+            AppMessage::SetState(state) => {
+                self.state = state;
+            }
+            AppMessage::UsernameChanged(username) => self.username = username,
+            AppMessage::PasswordChanged(password) => self.password = password,
+            AppMessage::AttemptLogin => {}
+            AppMessage::AttemptCreate => {}
         }
         Command::none()
     }
 
     fn view(&self) -> iced::Element<'_, Self::Message> {
-        const DARK_TEXT: Color = Color::from_rgb(0.4, 0.4, 0.4);
-        const RED_TEXT: Color = Color::from_rgb(0.8, 0.4, 0.4);
-        const YELLOW_TEXT: Color = Color::from_rgb(0.8, 0.8, 0.4);
-        const ORANGE_TEXT: Color = Color::from_rgb(0.8, 0.6, 0.4);
-        const SPACING: u16 = 10;
+        match self.state {
+            AppState::Default => self.base_view(),
+            AppState::Login => self.login_view(),
+            AppState::Create => self.create_view(),
+        }
+    }
 
+    fn theme(&self) -> iced::Theme {
+        iced::Theme::Dark
+    }
+}
+
+const DARK_TEXT: Color = Color::from_rgb(0.4, 0.4, 0.4);
+const RED_TEXT: Color = Color::from_rgb(0.8, 0.4, 0.4);
+const YELLOW_TEXT: Color = Color::from_rgb(0.8, 0.8, 0.4);
+const ORANGE_TEXT: Color = Color::from_rgb(0.8, 0.6, 0.4);
+const SPACING: u16 = 10;
+
+impl App
+where
+    Self: Application,
+{
+    fn base_view(&self) -> iced::Element<'_, <Self as Application>::Message> {
         let target_input: TextInput<_> = text_input("Connection URL", &self.target)
             .padding(10)
             .on_input(AppMessage::TargetChanged)
@@ -213,7 +264,73 @@ impl Application for App {
             .into()
     }
 
-    fn theme(&self) -> iced::Theme {
-        iced::Theme::Dark
+    fn login_view(&self) -> iced::Element<'_, <Self as Application>::Message> {
+        let title = text("Login").style(DARK_TEXT);
+
+        let username_input: TextInput<_> = text_input("Username", &self.username)
+            .padding(10)
+            .on_input(AppMessage::UsernameChanged);
+        let password_input: TextInput<_> = text_input("Password", &self.password)
+            .padding(10)
+            .on_input(AppMessage::PasswordChanged);
+
+        let submit_button: Button<_> = button("Login")
+            .on_press(AppMessage::AttemptLogin)
+            .padding(5)
+            .width(Length::Fill);
+        let switch_button: Button<_> = button("Don't have an account? Create")
+            .on_press(AppMessage::SetState(AppState::Create))
+            .padding(5)
+            .width(Length::Fill);
+
+        let content: Column<_> = column![
+            title,
+            username_input,
+            password_input,
+            submit_button,
+            switch_button
+        ]
+        .spacing(10);
+
+        container(content)
+            .width(Length::Fill)
+            .height(Length::Fill)
+            .padding(SPACING)
+            .into()
+    }
+
+    fn create_view(&self) -> iced::Element<'_, <Self as Application>::Message> {
+        let title = text("Create Account").style(DARK_TEXT);
+
+        let username_input: TextInput<_> = text_input("Username", &self.username)
+            .padding(10)
+            .on_input(AppMessage::UsernameChanged);
+        let password_input: TextInput<_> = text_input("Password", &self.password)
+            .padding(10)
+            .on_input(AppMessage::PasswordChanged);
+
+        let submit_button: Button<_> = button("Login")
+            .on_press(AppMessage::AttemptCreate)
+            .padding(5)
+            .width(Length::Fill);
+        let switch_button: Button<_> = button("Already have an account? Login")
+            .on_press(AppMessage::SetState(AppState::Login))
+            .padding(5)
+            .width(Length::Fill);
+
+        let content: Column<_> = column![
+            title,
+            username_input,
+            password_input,
+            submit_button,
+            switch_button
+        ]
+        .spacing(10);
+
+        container(content)
+            .width(Length::Fill)
+            .height(Length::Fill)
+            .padding(SPACING)
+            .into()
     }
 }
