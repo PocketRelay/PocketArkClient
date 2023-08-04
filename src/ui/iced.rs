@@ -127,7 +127,7 @@ impl Application for App {
     }
 
     fn title(&self) -> String {
-        format!("Pocket Relay Client v{}", APP_VERSION)
+        format!("Pocket Ark Client v{}", APP_VERSION)
     }
 
     fn update(&mut self, message: Self::Message) -> Command<Self::Message> {
@@ -290,7 +290,7 @@ where
 
         // Patching notice
         let patch_notice: Text = text(
-            "You must patch your game in order to make it compatible with Pocket Relay. \
+            "You must patch your game in order to make it compatible with Pocket Ark. \
             This patch can be left applied and wont affect playing on official servers.",
         )
         .style(DARK_TEXT);
