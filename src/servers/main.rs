@@ -11,7 +11,7 @@ use crate::{
     api::{create_http_client, create_target_url},
     constants::MAIN_PORT,
     ui::show_error,
-    TARGET,
+    TARGET, TOKEN,
 };
 
 pub async fn start_server() {
@@ -47,6 +47,11 @@ async fn handle_client(mut client: TcpStream) {
         None => return,
     };
 
+    let token = match &*TOKEN.read().await {
+        Some(value) => value.clone(),
+        None => return,
+    };
+
     // Create the upgrade URL
     let url = create_target_url(&target, UPGRADE_ENDPOINT);
 
@@ -60,9 +65,14 @@ async fn handle_client(mut client: TcpStream) {
         headers.insert(HEADER_SCHEME, scheme_value);
     }
 
+    let token_header = match HeaderValue::from_str(&token) {
+        Ok(value) => value,
+        Err(_) => return,
+    };
+
     // Append the port header
     headers.insert(HEADER_PORT, HeaderValue::from(target.port));
-    headers.insert(HEADER_AUTH, HeaderValue::from_static("wdawdawdawdwdawd"));
+    headers.insert(HEADER_AUTH, token_header);
 
     // Append the host header
     if let Ok(host_value) = HeaderValue::from_str(&target.host) {
