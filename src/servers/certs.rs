@@ -18,7 +18,7 @@ use openssl::{
 };
 use tower_http::trace::TraceLayer;
 
-use crate::show_error;
+use crate::ui::show_error;
 
 const CERTIFICATE: &[u8] = include_bytes!("../resources/identity/cert.der");
 const PRIVATE_KEY: &[u8] = include_bytes!("../resources/identity/key.pem");

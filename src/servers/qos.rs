@@ -11,7 +11,7 @@ use std::{
 
 use tokio::{net::UdpSocket, sync::RwLock};
 
-use crate::{constants::QOS_PORT, show_error};
+use crate::{constants::QOS_PORT, ui::show_error};
 
 pub async fn start_server() {
     let addr: SocketAddr = SocketAddr::V4(SocketAddrV4::new(Ipv4Addr::UNSPECIFIED, QOS_PORT));

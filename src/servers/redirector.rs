@@ -20,7 +20,7 @@ use tower_http::trace::TraceLayer;
 
 use crate::{
     constants::{MAIN_PORT, REDIRECTOR_PORT},
-    show_error,
+    ui::show_error,
 };
 
 const CERTIFICATE: &[u8] = include_bytes!("../resources/identity/cert.der");

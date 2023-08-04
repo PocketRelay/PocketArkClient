@@ -7,7 +7,12 @@ use tokio::{
     net::{TcpListener, TcpStream},
 };
 
-use crate::{constants::MAIN_PORT, show_error, TARGET};
+use crate::{
+    api::{create_http_client, create_target_url},
+    constants::MAIN_PORT,
+    ui::show_error,
+    TARGET,
+};
 
 pub async fn start_server() {
     // Initializing the underlying TCP listener
@@ -43,11 +48,7 @@ async fn handle_client(mut client: TcpStream) {
     };
 
     // Create the upgrade URL
-    let mut url = String::new();
-    url.push_str(&target.scheme);
-    url.push_str("://");
-    url.push_str(&target.host);
-    url.push_str(UPGRADE_ENDPOINT);
+    let url = create_target_url(&target, UPGRADE_ENDPOINT);
 
     // Create the HTTP Upgrade headers
     let mut headers = HeaderMap::new();
@@ -67,16 +68,9 @@ async fn handle_client(mut client: TcpStream) {
     if let Ok(host_value) = HeaderValue::from_str(&target.host) {
         headers.insert(HEADER_HOST, host_value);
     }
-    println!("connect");
 
     // Create the request
-    let request = Client::builder()
-        .danger_accept_invalid_certs(true)
-        .build()
-        .unwrap()
-        .get(url)
-        .headers(headers)
-        .send();
+    let request = create_http_client().get(url).headers(headers).send();
 
     // Await the server response to the request
     let response = match request.await {
@@ -86,15 +80,12 @@ async fn handle_client(mut client: TcpStream) {
             return;
         }
     };
-    println!("Connected");
 
     // Server connection gained through upgrading the client
     let mut server = match response.upgrade().await {
         Ok(value) => value,
         Err(_) => return,
     };
-
-    println!("Upgraded");
 
     // Copy the data between the connection
     let _ = copy_bidirectional(&mut client, &mut server).await;

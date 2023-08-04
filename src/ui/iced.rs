@@ -1,7 +1,9 @@
 use crate::{
+    api::AuthError,
     constants::{APP_VERSION, ICON_BYTES},
-    remove_host_entry, show_error, show_info, try_patch_game, try_remove_patch, try_update_host,
-    LookupData, LookupError,
+    host::remove_host_entry,
+    patch::{try_patch_game, try_remove_patch},
+    try_update_create, try_update_host, try_update_login, LookupData, LookupError,
 };
 use iced::{
     executor,
@@ -12,6 +14,8 @@ use iced::{
     window::{self, icon},
     Application, Color, Command, Length, Settings, Theme,
 };
+
+use super::{show_error, show_info};
 
 /// The window size
 pub const WINDOW_SIZE: (u32, u32) = (500, 280);
@@ -32,7 +36,8 @@ pub fn init(_: tokio::runtime::Runtime) {
 }
 
 struct App {
-    lookup_result: LookupState,
+    lookup_state: LookupState,
+    auth_state: AuthState,
     target: String,
     username: String,
     password: String,
@@ -50,6 +55,7 @@ enum AppState {
     Default,
     Login,
     Create,
+    Running,
 }
 
 /// Messages used for updating the game state
@@ -69,11 +75,15 @@ enum AppMessage {
     RemovePatch,
     /// Message for setting the current lookup result state
     LookupState(LookupState),
+    /// Message for setting the current lookup result state
+    AuthState(AuthState),
 
     AttemptLogin,
     AttemptCreate,
 
     SetState(AppState),
+
+    Disconnect,
 }
 
 /// Different states that lookup process can be in
@@ -89,6 +99,13 @@ enum LookupState {
     Error(String),
 }
 
+#[derive(Debug, Clone)]
+enum AuthState {
+    None,
+    Loading,
+    Error(String),
+}
+
 impl Application for App {
     type Message = AppMessage;
     type Executor = executor::Default;
@@ -98,7 +115,8 @@ impl Application for App {
     fn new(_flags: Self::Flags) -> (Self, Command<Self::Message>) {
         (
             App {
-                lookup_result: LookupState::None,
+                lookup_state: LookupState::None,
+                auth_state: AuthState::None,
                 target: String::new(),
                 state: AppState::Default,
                 username: String::new(),
@@ -119,11 +137,11 @@ impl Application for App {
             // Handle new target being set
             AppMessage::UpdateTarget => {
                 // Don't try to lookup if already looking up
-                if let LookupState::Loading = self.lookup_result {
+                if let LookupState::Loading = self.lookup_state {
                     return Command::none();
                 }
 
-                self.lookup_result = LookupState::Loading;
+                self.lookup_state = LookupState::Loading;
 
                 let target = self.target.clone();
 
@@ -162,15 +180,48 @@ impl Application for App {
                 if let LookupState::Success(_) = &value {
                     self.state = AppState::Login;
                 }
-                self.lookup_result = value
+                self.lookup_state = value
             }
             AppMessage::SetState(state) => {
                 self.state = state;
             }
             AppMessage::UsernameChanged(username) => self.username = username,
             AppMessage::PasswordChanged(password) => self.password = password,
-            AppMessage::AttemptLogin => {}
-            AppMessage::AttemptCreate => {}
+            AppMessage::AttemptLogin => {
+                self.auth_state = AuthState::Loading;
+                // Handling for once the async lookup is complete
+                let post_login = |result: Result<(), AuthError>| match result {
+                    Ok(_) => AppMessage::SetState(AppState::Running),
+                    Err(err) => AppMessage::AuthState(AuthState::Error(err.to_string())),
+                };
+
+                return Command::perform(
+                    try_update_login(self.username.clone(), self.password.clone()),
+                    post_login,
+                );
+            }
+            AppMessage::AttemptCreate => {
+                self.auth_state = AuthState::Loading;
+                // Handling for once the async lookup is complete
+                let post_create = |result: Result<(), AuthError>| match result {
+                    Ok(_) => AppMessage::SetState(AppState::Running),
+                    Err(err) => AppMessage::AuthState(AuthState::Error(err.to_string())),
+                };
+
+                return Command::perform(
+                    try_update_create(self.username.clone(), self.password.clone()),
+                    post_create,
+                );
+            }
+            AppMessage::Disconnect => {
+                self.state = AppState::Default;
+                self.username.clear();
+                self.password.clear();
+                self.lookup_state = LookupState::None;
+            }
+            AppMessage::AuthState(state) => {
+                self.auth_state = state;
+            }
         }
         Command::none()
     }
@@ -180,6 +231,7 @@ impl Application for App {
             AppState::Default => self.base_view(),
             AppState::Login => self.login_view(),
             AppState::Create => self.create_view(),
+            AppState::Running => self.running_view(),
         }
     }
 
@@ -208,7 +260,7 @@ where
             text("Please put the server Connection URL below and press 'Set'").style(DARK_TEXT);
         let target_button: Button<_> = button("Set").on_press(AppMessage::UpdateTarget).padding(10);
 
-        let status_text: Text = match &self.lookup_result {
+        let status_text: Text = match &self.lookup_state {
             LookupState::None => text("Not Connected.").style(ORANGE_TEXT),
             LookupState::Loading => text("Connecting...").style(YELLOW_TEXT),
             LookupState::Success(lookup_data) => text(format!(
@@ -267,24 +319,32 @@ where
     fn login_view(&self) -> iced::Element<'_, <Self as Application>::Message> {
         let title = text("Login").style(DARK_TEXT);
 
+        let status_text: Text = match &self.auth_state {
+            AuthState::None => text("Enter your username and password").style(ORANGE_TEXT),
+            AuthState::Loading => text("Authenticating...").style(YELLOW_TEXT),
+            AuthState::Error(err) => text(err).style(Palette::DARK.danger),
+        };
+
         let username_input: TextInput<_> = text_input("Username", &self.username)
             .padding(10)
             .on_input(AppMessage::UsernameChanged);
         let password_input: TextInput<_> = text_input("Password", &self.password)
             .padding(10)
+            .password()
             .on_input(AppMessage::PasswordChanged);
 
         let submit_button: Button<_> = button("Login")
             .on_press(AppMessage::AttemptLogin)
-            .padding(5)
+            .padding(10)
             .width(Length::Fill);
         let switch_button: Button<_> = button("Don't have an account? Create")
             .on_press(AppMessage::SetState(AppState::Create))
-            .padding(5)
+            .padding(10)
             .width(Length::Fill);
 
         let content: Column<_> = column![
             title,
+            status_text,
             username_input,
             password_input,
             submit_button,
@@ -302,30 +362,64 @@ where
     fn create_view(&self) -> iced::Element<'_, <Self as Application>::Message> {
         let title = text("Create Account").style(DARK_TEXT);
 
+        let status_text: Text = match &self.auth_state {
+            AuthState::None => text("Enter your desired username and password").style(ORANGE_TEXT),
+            AuthState::Loading => text("Creating...").style(YELLOW_TEXT),
+            AuthState::Error(err) => text(err).style(Palette::DARK.danger),
+        };
+
         let username_input: TextInput<_> = text_input("Username", &self.username)
             .padding(10)
             .on_input(AppMessage::UsernameChanged);
         let password_input: TextInput<_> = text_input("Password", &self.password)
             .padding(10)
+            .password()
             .on_input(AppMessage::PasswordChanged);
 
-        let submit_button: Button<_> = button("Login")
+        let submit_button: Button<_> = button("Create")
             .on_press(AppMessage::AttemptCreate)
-            .padding(5)
+            .padding(10)
             .width(Length::Fill);
         let switch_button: Button<_> = button("Already have an account? Login")
             .on_press(AppMessage::SetState(AppState::Login))
-            .padding(5)
+            .padding(10)
             .width(Length::Fill);
 
         let content: Column<_> = column![
             title,
+            status_text,
             username_input,
             password_input,
             submit_button,
             switch_button
         ]
         .spacing(10);
+
+        container(content)
+            .width(Length::Fill)
+            .height(Length::Fill)
+            .padding(SPACING)
+            .into()
+    }
+
+    fn running_view(&self) -> iced::Element<'_, <Self as Application>::Message> {
+        let status_text: Text = match &self.lookup_state {
+            LookupState::None => text("Not Connected.").style(ORANGE_TEXT),
+            LookupState::Loading => text("Connecting...").style(YELLOW_TEXT),
+            LookupState::Success(lookup_data) => text(format!(
+                "Connected: {} {} version v{}",
+                lookup_data.scheme, lookup_data.host, lookup_data.version
+            ))
+            .style(Palette::DARK.success),
+            LookupState::Error(err) => text(err).style(Palette::DARK.danger),
+        };
+
+        let disconnect_button: Button<_> = button("Disconnect")
+            .on_press(AppMessage::Disconnect)
+            .padding(5)
+            .width(Length::Fill);
+
+        let content: Column<_> = column![status_text, disconnect_button].spacing(10);
 
         container(content)
             .width(Length::Fill)
