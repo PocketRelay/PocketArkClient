@@ -11,6 +11,6 @@ pub async fn start() {
         main::start_server(),
         qos::start_server(),
         redirector::start_server(),
-        certs::start_server()
+        // certs::start_server()
     );
 }
