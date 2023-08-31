@@ -18,8 +18,8 @@ pub async fn start_server() {
     let socket = match UdpSocket::bind(addr).await {
         Ok(value) => value,
         Err(err) => {
-            let text = format!("Failed to start main: {}", err);
-            show_error("Failed to start", &text);
+            let text = format!("Failed to start main qos: {}", err);
+            show_error("Failed to qos", &text);
             exit(1);
         }
     };
@@ -32,6 +32,8 @@ pub async fn start_server() {
             Ok(value) => value,
             Err(_) => continue,
         };
+
+        println!("Hit QOS");
 
         let address = match public_address().await {
             Some(value) => value,
