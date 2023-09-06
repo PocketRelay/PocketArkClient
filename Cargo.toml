@@ -50,6 +50,3 @@ features = ["image", "glow", "tokio"]
 [dependencies.native-windows-gui]
 version = "1.0.13"
 optional = true
-
-[patch.crates-io]
-local-ip-address = { git = "https://github.com/jacobtread/local-ip-address.git" }
