@@ -93,6 +93,8 @@ const TOKEN_HEADER: &str = "X-Token";
 async fn handle_http(
     req: hyper::Request<hyper::body::Body>,
 ) -> Result<hyper::Response<hyper::body::Body>, Infallible> {
+    // TODO: Security, handle non local connections prevent them from using this token
+
     dbg!(&req);
 
     let uri = req.uri();
