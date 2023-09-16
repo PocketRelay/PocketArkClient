@@ -62,12 +62,10 @@ pub fn create_http_client() -> Client {
 }
 
 pub fn create_target_url(target: &LookupData, endpoint: &str) -> String {
-    let mut url = String::new();
-    url.push_str(&target.scheme);
-    url.push_str("://");
-    url.push_str(&target.host);
-    url.push_str(endpoint);
-    url
+    format!(
+        "{}://{}:{}{}",
+        target.scheme, target.host, target.port, endpoint
+    )
 }
 
 #[derive(Debug, Error)]
@@ -196,6 +194,7 @@ pub async fn try_lookup_host(host: String) -> Result<LookupData, LookupError> {
     }
 
     let url = response.url();
+
     let scheme = url.scheme().to_string();
 
     let port = url.port_or_known_default().unwrap_or(80);

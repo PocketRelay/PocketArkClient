@@ -16,7 +16,7 @@ pub const ANSEL_SDK64_BAK: &[u8] = include_bytes!("resources/embed/AnselSDK64.ba
 pub const ANSEL_SDK64_DLL: &[u8] = include_bytes!("resources/embed/AnselSDK64.dll");
 
 /// The local redirector server port
-pub const REDIRECTOR_PORT: u16 = 42230;
+pub const HTTP_PORT: u16 = 42230;
 /// The local proxy main server port
 pub const MAIN_PORT: u16 = 42231;
 /// The local qos server port
