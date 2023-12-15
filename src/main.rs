@@ -20,6 +20,11 @@ pub static TOKEN: RwLock<Option<String>> = RwLock::const_new(None);
 
 //tcp.port == 42230 || tcp.port == 44325 || tcp.port == 443 || tcp.port == 10853
 fn main() {
+    // Initialize logging
+    env_logger::builder()
+        .filter_module("pocket_ark_client", log::LevelFilter::Debug)
+        .init();
+
     // Create tokio async runtime
     let runtime = tokio::runtime::Builder::new_multi_thread()
         .enable_all()

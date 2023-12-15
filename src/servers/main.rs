@@ -1,6 +1,7 @@
 use std::{net::Ipv4Addr, process::exit};
 
 use hyper::{header, http::HeaderValue, HeaderMap};
+use log::debug;
 use reqwest::Client;
 use tokio::{
     io::copy_bidirectional,
@@ -26,7 +27,7 @@ pub async fn start_server() {
     };
 
     while let Ok((stream, _addr)) = listener.accept().await {
-        println!("Hit main");
+        debug!("Hit main");
         tokio::spawn(handle_client(stream));
     }
 }
@@ -42,6 +43,8 @@ const HEADER_AUTH: &str = "X-Pocket-Ark-Auth";
 const UPGRADE_ENDPOINT: &str = "/ark/client/upgrade";
 
 async fn handle_client(mut client: TcpStream) {
+    debug!("Blaze client connect");
+
     let target = match &*TARGET.read().await {
         Some(value) => value.clone(),
         None => return,

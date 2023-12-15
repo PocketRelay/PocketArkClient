@@ -1,6 +1,6 @@
 use crate::{api::create_target_url, constants::HTTPS_PORT, ui::show_error, TARGET, TOKEN};
 use hyper::{
-    header::{HeaderValue, CONTENT_LENGTH, CONTENT_TYPE},
+    header::{HeaderValue, CONTENT_ENCODING, CONTENT_LENGTH, CONTENT_TYPE},
     server::conn::Http,
     service::service_fn,
     HeaderMap, Method, Response, StatusCode,
@@ -129,6 +129,11 @@ async fn handle_http(
 
         if let Some(content_type) = req_headers.get(CONTENT_TYPE) {
             proxy_req = proxy_req.header(CONTENT_TYPE, content_type.clone());
+        }
+
+        // Forward encoding type
+        if let Some(content_type) = req_headers.get(CONTENT_ENCODING) {
+            proxy_req = proxy_req.header(CONTENT_ENCODING, content_type.clone());
         }
 
         proxy_req = proxy_req.body(req.into_body());

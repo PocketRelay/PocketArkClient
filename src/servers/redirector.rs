@@ -6,6 +6,7 @@ use hyper::{
     service::service_fn,
     Response,
 };
+use log::{debug, error};
 use openssl::{
     pkey::PKey,
     rsa::Rsa,
@@ -63,10 +64,12 @@ pub async fn start_server() {
         let ssl = Ssl::new(acceptor.context()).unwrap();
 
         tokio::task::spawn(async move {
+            debug!("redirect hit");
+
             let mut stream = match tokio_openssl::SslStream::new(ssl, stream) {
                 Ok(value) => value,
                 Err(err) => {
-                    eprintln!("Failed to accept ssl connection: {}", err);
+                    error!("Failed to accept ssl connection: {}", err);
                     return;
                 }
             };
@@ -77,7 +80,7 @@ pub async fn start_server() {
                 .serve_connection(stream, service_fn(handle_http))
                 .await
             {
-                eprintln!("Failed to serve http connection: {:?}", err);
+                error!("Failed to serve http connection: {:?}", err);
             }
         });
     }
