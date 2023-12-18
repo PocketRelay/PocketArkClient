@@ -5,6 +5,7 @@ use hyper::{
     service::service_fn,
     HeaderMap, Method, Response, StatusCode,
 };
+use log::debug;
 use openssl::{
     pkey::PKey,
     rsa::Rsa,
@@ -83,6 +84,7 @@ const TOKEN_HEADER: &str = "X-Token";
 async fn handle_http(
     req: hyper::Request<hyper::body::Body>,
 ) -> Result<hyper::Response<hyper::body::Body>, Infallible> {
+    debug!("{:?}", req);
     // TODO: Security, handle non local connections prevent them from using this token
 
     let target = match &*TARGET.read().await {

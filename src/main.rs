@@ -20,9 +20,12 @@ pub static TOKEN: RwLock<Option<String>> = RwLock::const_new(None);
 
 //tcp.port == 42230 || tcp.port == 44325 || tcp.port == 443 || tcp.port == 10853
 fn main() {
+    // Enable tracing
+    std::env::set_var("RUST_LOG", "trace");
+
     // Initialize logging
     env_logger::builder()
-        .filter_module("pocket_ark_client", log::LevelFilter::Debug)
+        .filter_level(log::LevelFilter::Debug)
         .init();
 
     // Create tokio async runtime
