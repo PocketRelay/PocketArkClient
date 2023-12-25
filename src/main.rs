@@ -2,67 +2,71 @@
     all(target_os = "windows", not(debug_assertions),),
     windows_subsystem = "windows"
 )]
+#![warn(unused_crate_dependencies)]
 
-use api::{try_create, try_login, try_lookup_host, AuthError, LookupData, LookupError};
-use tokio::sync::RwLock;
-mod constants;
-mod servers;
-mod ui;
+use config::read_config_file;
+use core::{api::create_http_client, api::read_client_identity, reqwest};
+use hosts::HostEntryGuard;
+use log::error;
+use pocket_ark_client_shared as core;
+use std::path::Path;
+use ui::show_confirm;
 
-pub mod api;
-pub mod host;
+use crate::ui::show_error;
+
+pub mod config;
+pub mod hosts;
 pub mod patch;
+pub mod servers;
+pub mod ui;
 
-/// Shared target location
-pub static TARGET: RwLock<Option<LookupData>> = RwLock::const_new(None);
-/// Authentication token
-pub static TOKEN: RwLock<Option<String>> = RwLock::const_new(None);
+/// Application crate version string
+pub const APP_VERSION: &str = env!("CARGO_PKG_VERSION");
 
 //tcp.port == 42230 || tcp.port == 44325 || tcp.port == 443 || tcp.port == 10853
 fn main() {
-    // Enable tracing
-    std::env::set_var("RUST_LOG", "trace");
-
     // Initialize logging
     env_logger::builder()
-        .filter_level(log::LevelFilter::Debug)
+        .filter_module("pocket_ark_client", log::LevelFilter::Debug)
         .init();
 
-    // Create tokio async runtime
-    let runtime = tokio::runtime::Builder::new_multi_thread()
-        .enable_all()
-        .build()
-        .expect("Failed building the Runtime");
+    // Attempt to apply the hosts file modification guard
+    let _host_guard: Option<HostEntryGuard> = HostEntryGuard::apply();
 
-    // Add the hosts file entry
-    let _ = host::set_host_entry();
+    // Load the config file
+    let config: Option<config::ClientConfig> = read_config_file();
 
-    runtime.spawn(servers::start());
-    ui::iced::init(runtime);
+    // Load the client identity
+    let identity: Option<reqwest::Identity> = load_identity();
+
+    // Create the internal HTTP client
+    let client: reqwest::Client =
+        create_http_client(identity).expect("Failed to create HTTP client");
+
+    // Initialize the UI
+    ui::init(config, client);
 }
 
-/// Attempts to update the host target first looks up the
-/// target then will assign the stored global target to the
-/// target before returning the result
-///
-/// `target` The target to use
-async fn try_update_host(target: String) -> Result<LookupData, LookupError> {
-    let result = try_lookup_host(target).await?;
-    let mut write = TARGET.write().await;
-    *write = Some(result.clone());
-    Ok(result)
-}
+/// Attempts to load an identity file if one is present
+fn load_identity() -> Option<reqwest::Identity> {
+    // Load the client identity
+    let identity_file = Path::new("pocket-ark-identity.p12");
 
-async fn try_update_login(username: String, password: String) -> Result<(), AuthError> {
-    let token = try_login(username, password).await?;
-    let mut write = TOKEN.write().await;
-    *write = Some(token);
-    Ok(())
-}
+    // Handle no identity or user declining identity
+    if !identity_file.exists() || !show_confirm(
+        "Found client identity",
+        "Detected client identity pocket-ark-identity.p12, would you like to use this identity?",
+    ) {
+        return None;
+    }
 
-async fn try_update_create(username: String, password: String) -> Result<(), AuthError> {
-    let token = try_create(username, password).await?;
-    let mut write = TOKEN.write().await;
-    *write = Some(token);
-    Ok(())
+    // Read the client identity
+    match read_client_identity(identity_file) {
+        Ok(value) => Some(value),
+        Err(err) => {
+            error!("Failed to set client identity: {}", err);
+            show_error("Failed to set client identity", &err.to_string());
+            None
+        }
+    }
 }

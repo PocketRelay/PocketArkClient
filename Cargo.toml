@@ -8,47 +8,32 @@ license = "MIT"
 keywords = ["EA", "PocketArk", "MassEffectAndromeda"]
 authors = ["Jacobtread <jacobtread@gmail.com>"]
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 [build-dependencies]
 winres = "0.1"
 
 [dependencies]
+pocket-ark-client-shared = { version = "0.1", path = "../pocket-ark-client-shared" }
 
-log = "0.4"
-env_logger = "0.10"
-
-
-openssl-sys = "0.9"
-openssl = "0.10"
-
-reqwest = { version = "^0.11", features = ["json", "deflate", "gzip"] }
-rustls-pemfile = "1.0.3"
-
-tokio-openssl = "0.6.3"
-
-hyper = { version = "^0.14", features = ["full"] }
-tokio = { version = "^1", features = ["full"] }
-tower = "^0.4"
-tower-http = { version = "^0.4", features = ["full"] }
-
+# Serialization
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 
 # Native file picker dialog
-native-dialog = "0.6.3"
+native-dialog = "0.7.0"
 
 thiserror = "1"
-# Library for obtaining the local IP address of the device
-local-ip-address = "0.5"
-bytes = "1.5.0"
+
+# Logging
+log = "0.4"
+env_logger = "0.10"
 
 # Iced GUI framework variant
 [dependencies.iced]
-version = "0.9"
+version = "0.10"
 default-features = false
-features = ["image", "glow", "tokio"]
+features = ["image", "tokio"]
 
-# Native Windows GUI framework variant
-[dependencies.native-windows-gui]
-version = "1.0.13"
-optional = true
+[profile.release]
+strip = true
+lto = true
+codegen-units = 1

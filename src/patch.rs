@@ -7,7 +7,9 @@ use std::{
 use native_dialog::FileDialog;
 use thiserror::Error;
 
-use crate::constants::{ANSEL_SDK64_BAK, ANSEL_SDK64_DLL};
+// AnselSDK patch
+pub const ANSEL_SDK64_BAK: &[u8] = include_bytes!("resources/embed/AnselSDK64.bak");
+pub const ANSEL_SDK64_DLL: &[u8] = include_bytes!("resources/embed/AnselSDK64.dll");
 
 /// Errors that can occur while patching the game
 #[derive(Debug, Error)]
