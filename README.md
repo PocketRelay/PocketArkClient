@@ -47,13 +47,7 @@ Guide for manually compiling the client executable from source
 To build on windows you are required to setup `vcpkg` and install the openssl dependency. To do this
 follow the guide at https://vcpkg.io/en/getting-started then when you reach "Install libraries for your project"
 install the following package:
-- openssl:x64-windows-static
-
-Once you've installed the packages set the following environment variable:
-
-```env
-VCPKGRS_DYNAMIC=1
-```
+- openssl:x64-windows-static-md
 
 ### Combined Answer
 
