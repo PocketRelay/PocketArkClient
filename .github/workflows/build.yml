@@ -14,17 +14,17 @@ jobs:
         include:
           # Linux iced build
           - os: ubuntu-latest
-            file: pocket-relay-client
+            file: pocket-ark-client
             file_name: Ubuntu Build
             feature: iced
           # Windows iced build
           - os: windows-latest
-            file: pocket-relay-client.exe
+            file: pocket-ark-client.exe
             file_name: Windows Build
             feature: iced
           # Windows native build
           - os: windows-latest
-            file: pocket-relay-client.exe
+            file: pocket-ark-client.exe
             file_name: Windows Native Build
             feature: native
     runs-on: ${{ matrix.os }}
