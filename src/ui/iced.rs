@@ -3,6 +3,7 @@ use crate::{
     config::{write_config_file, ClientConfig},
     patch::{try_patch_game, try_remove_patch},
     servers::start_all_servers,
+    update,
 };
 use iced::{
     executor,
@@ -145,8 +146,8 @@ impl Application for App {
             .map(|value| (value.connection_url, true))
             .unwrap_or_default();
 
-         // Spawn the update checking task
-         tokio::spawn(update::update(http_client.clone()));
+        // Spawn the update checking task
+        tokio::spawn(update::update(http_client.clone()));
 
         (
             App {
