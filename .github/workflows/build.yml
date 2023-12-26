@@ -32,17 +32,8 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       # OpenSSL dependency on windows
-      - name: vcpkg build
-        uses: johnwason/vcpkg-action@v5
-        id: vcpkg
-        with:
-          pkgs: openssl
-          triplet: x64-windows-static-md
-          token: ${{ github.token }}
-        if: matrix.os == 'windows-latest'
-      # Link dependencies
-      - name: Integrate vcpkg
-        run: vcpkg integrate install
+      - name: Setup vcpkg
+        run: vcpkg install openssl:x64-windows-static-md && vcpkg integrate install
         if: matrix.os == 'windows-latest'
       # Building
       - name: Build Client
