@@ -40,6 +40,10 @@ jobs:
           triplet: x64-windows-static
           token: ${{ github.token }}
         if: matrix.os == 'windows-latest'
+      # Link dependencies
+      - name: Integrate vcpkg
+        run: vcpkg integrate install
+        if: matrix.os == 'windows-latest'
       # Building
       - name: Build Client
         run: cargo build --verbose --no-default-features --features ${{ matrix.feature }}
