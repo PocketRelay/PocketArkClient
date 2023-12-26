@@ -53,14 +53,22 @@ pub struct ConnectPartial {
     #[nwg_layout_item(layout: grid, row: 4, col_span: 2)]
     state_label: Label,
 
+    /// Label for patching the game
+    #[nwg_control(text:
+        "You must patch your game in order to make it compatible with\n\
+        Pocket Ark.",
+    )]
+    #[nwg_layout_item(layout: grid, row: 5, col_span: 2)]
+    patch_label: Label,
+
     /// Button for connecting
     #[nwg_control(text: "Patch")]
-    #[nwg_layout_item(layout: grid, col: 0, row: 5, col_span: 1)]
+    #[nwg_layout_item(layout: grid, col: 0, row: 6, col_span: 1)]
     patch_button: Button,
 
     /// Button for connecting
     #[nwg_control(text: "Remove Patch")]
-    #[nwg_layout_item(layout: grid, col: 1, row: 5, col_span: 1)]
+    #[nwg_layout_item(layout: grid, col: 1, row: 6, col_span: 1)]
     remove_patch_button: Button,
 }
 
@@ -182,9 +190,14 @@ pub struct RunningPartial {
     #[nwg_layout_item(layout: grid, row: 0)]
     state_label: Label,
 
+    /// Label for keeping the program running
+    #[nwg_control(text: "You must keep this program running while playing.")]
+    #[nwg_layout_item(layout: grid, row: 1)]
+    keep_alive_label: Label,
+
     /// Button for disconnecting
     #[nwg_control(text: "Disconnect")]
-    #[nwg_layout_item(layout: grid, row: 1)]
+    #[nwg_layout_item(layout: grid, row: 2)]
     disconnect_button: Button,
 }
 
@@ -450,7 +463,7 @@ impl App {
         match &*self.app_state.borrow() {
             AppState::Connect => {
                 self.set_visible_frame(&self.connect_frame);
-                self.window.set_size(500, 260);
+                self.window.set_size(500, 340);
 
                 self.connect_ui.state_label.set_text("Not connected");
             }
@@ -468,7 +481,7 @@ impl App {
             }
             AppState::Running { lookup_data, .. } => {
                 self.set_visible_frame(&self.running_frame);
-                self.window.set_size(500, 120);
+                self.window.set_size(500, 160);
 
                 let text = format!(
                     "Connected: {} {} version v{}",
