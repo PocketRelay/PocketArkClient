@@ -12,7 +12,7 @@ authors = ["Jacobtread <jacobtread@gmail.com>"]
 winres = "0.1"
 
 [features]
-default = ["native"]
+default = ["iced"]
 iced = ["dep:iced"]
 native = [
     "dep:native-windows-gui",
