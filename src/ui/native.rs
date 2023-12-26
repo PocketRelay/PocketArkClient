@@ -648,8 +648,4 @@ pub fn init(config: Option<ClientConfig>, client: Client) {
     app.set_app_state(AppState::Connect);
 
     dispatch_thread_events();
-
-    // Block for CTRL+C to keep servers alive when window closes
-    let shutdown_signal = tokio::signal::ctrl_c();
-    let _ = runtime.block_on(shutdown_signal);
 }
