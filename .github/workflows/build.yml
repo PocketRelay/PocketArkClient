@@ -37,7 +37,7 @@ jobs:
         id: vcpkg
         with:
           pkgs: openssl
-          triplet: x64-windows-static
+          triplet: x64-windows-static-md
           token: ${{ github.token }}
         if: matrix.os == 'windows-latest'
       # Link dependencies
