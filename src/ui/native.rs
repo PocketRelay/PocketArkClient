@@ -39,7 +39,7 @@ pub struct ConnectPartial {
     target_url_input: TextInput,
 
     /// Button for connecting
-    #[nwg_control(text: "Set")]
+    #[nwg_control(text: "Connect")]
     #[nwg_layout_item(layout: grid,  row: 2, col_span: 2)]
     connect_button: Button,
 
