@@ -505,7 +505,7 @@ impl App {
             let state = match lookup_server(http_client, target).await {
                 Ok(lookup_data) => NextState::State(AppState::Login { lookup_data }),
                 Err(err) => {
-                    error_message("Failed to lookup server", &err.to_string());
+                    show_error("Failed to lookup server", &err.to_string());
                     NextState::Error
                 }
             };
@@ -543,7 +543,7 @@ impl App {
                     auth_token,
                 }),
                 Err(err) => {
-                    error_message("Failed to login", &err.to_string());
+                    show_error("Failed to login", &err.to_string());
                     NextState::Error
                 }
             };
@@ -586,7 +586,7 @@ impl App {
                     auth_token,
                 }),
                 Err(err) => {
-                    error_message("Failed to create account", &err.to_string());
+                    show_error("Failed to create account", &err.to_string());
                     NextState::Error
                 }
             };
@@ -652,49 +652,4 @@ pub fn init(config: Option<ClientConfig>, client: Client) {
     // Block for CTRL+C to keep servers alive when window closes
     let shutdown_signal = tokio::signal::ctrl_c();
     let _ = runtime.block_on(shutdown_signal);
-}
-
-/// Shows a confirmation message to the user returning
-/// the choice that the user made.
-///
-/// ## Arguments
-/// * `title` - The title for the dialog
-/// * `text`  - The text for the dialog
-pub fn confirm_message(title: &str, text: &str) -> bool {
-    let choice = message(&MessageParams {
-        title,
-        content: text,
-        buttons: MessageButtons::YesNo,
-        icons: MessageIcons::Question,
-    });
-
-    matches!(choice, MessageChoice::Yes)
-}
-
-/// Shows a info message to the user.
-///
-/// ## Arguments
-/// * `title` - The title for the dialog
-/// * `text`  - The text for the dialog
-pub fn info_message(title: &str, text: &str) {
-    message(&MessageParams {
-        title,
-        content: text,
-        buttons: MessageButtons::Ok,
-        icons: MessageIcons::Info,
-    });
-}
-
-/// Shows an error message to the user.
-///
-/// ## Arguments
-/// * `title` - The title for the dialog
-/// * `text`  - The text for the dialog
-pub fn error_message(title: &str, text: &str) {
-    message(&MessageParams {
-        title,
-        content: text,
-        buttons: MessageButtons::Ok,
-        icons: MessageIcons::Error,
-    });
 }
