@@ -8,6 +8,7 @@ use crate::{
     },
     patch::{try_patch_game, try_remove_patch},
     servers::start_all_servers,
+    update,
 };
 use native_windows_derive::{NwgPartial, NwgUi};
 use native_windows_gui::{init as nwg_init, *};
@@ -631,7 +632,7 @@ pub fn init(config: Option<ClientConfig>, client: Client) {
     let _enter = runtime.enter();
 
     // Spawn the updating task
-    // tokio::spawn(update::update(client.clone()));
+    tokio::spawn(update::update(client.clone()));
 
     // Initialize nwg
     nwg_init().expect("Failed to initialize native UI");

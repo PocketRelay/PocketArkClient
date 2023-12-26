@@ -19,6 +19,7 @@ pub mod hosts;
 pub mod patch;
 pub mod servers;
 pub mod ui;
+pub mod update;
 
 /// Application crate version string
 pub const APP_VERSION: &str = env!("CARGO_PKG_VERSION");
