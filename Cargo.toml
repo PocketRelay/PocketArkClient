@@ -21,7 +21,7 @@ native = [
 ]
 
 [dependencies]
-pocket-ark-client-shared = { version = "0.1", path = "../pocket-ark-client-shared" }
+pocket-ark-client-shared = { version = "0.1", git = "https://github.com/PocketRelay/PocketArkClientShared.git" }
 
 # Serialization
 serde = { version = "1", features = ["derive"] }

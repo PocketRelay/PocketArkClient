@@ -2420,6 +2420,7 @@ dependencies = [
 [[package]]
 name = "pocket-ark-client-shared"
 version = "0.1.0"
+source = "git+https://github.com/PocketRelay/PocketArkClientShared.git#3c5894c2a5f761b84b2a755d2233070d3565effe"
 dependencies = [
  "anyhow",
  "bytes",
