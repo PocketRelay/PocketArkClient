@@ -11,6 +11,15 @@ authors = ["Jacobtread <jacobtread@gmail.com>"]
 [build-dependencies]
 winres = "0.1"
 
+[features]
+default = ["native"]
+iced = ["dep:iced"]
+native = [
+    "dep:native-windows-gui",
+    "dep:native-windows-derive",
+    "dep:parking_lot",
+]
+
 [dependencies]
 pocket-ark-client-shared = { version = "0.1", path = "../pocket-ark-client-shared" }
 
@@ -18,20 +27,32 @@ pocket-ark-client-shared = { version = "0.1", path = "../pocket-ark-client-share
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 
-# Native file picker dialog
-native-dialog = "0.7.0"
-
 thiserror = "1"
 
 # Logging
 log = "0.4"
 env_logger = "0.10"
 
+parking_lot = { version = "0.12", optional = true }
+
+# Tokio async runtime
+tokio = { version = "1", features = ["full"] }
+
+
+# Native dialogs and file picker
+native-dialog = { version = "0.7" }
+
+# Native Windows GUI framework variant
+native-windows-gui = { version = "1", optional = true, features = ["notice"] }
+native-windows-derive = { version = "1", optional = true }
+
 # Iced GUI framework variant
 [dependencies.iced]
 version = "0.10"
 default-features = false
 features = ["image", "tokio"]
+optional = true
+
 
 [profile.release]
 strip = true

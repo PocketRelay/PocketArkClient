@@ -7,7 +7,12 @@ fn main() {
         } else {
             res.set_manifest(include_str!("./Manifest.xml"));
         }
-        res.set_icon("src/resources/assets/icon.ico");
+        res.set_icon("src/resources/icon.ico");
         res.compile().unwrap();
+    }
+
+    #[cfg(all(not(target_os = "windows"), feature = "native"))]
+    {
+        compile_error!("Cannot compile the windows native variant for non windows targets");
     }
 }

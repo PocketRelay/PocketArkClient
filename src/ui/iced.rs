@@ -1,3 +1,4 @@
+use super::{ICON_BYTES, WINDOW_TITLE};
 use crate::{
     config::{write_config_file, ClientConfig},
     patch::{try_patch_game, try_remove_patch},
@@ -20,11 +21,6 @@ use pocket_ark_client_shared::{
     },
     reqwest,
 };
-
-/// Window icon bytes
-pub const ICON_BYTES: &[u8] = include_bytes!("resources/assets/icon.ico");
-/// Title used for created windows
-pub const WINDOW_TITLE: &str = concat!("Pocket Ark Client v", env!("CARGO_PKG_VERSION"));
 
 /// The window size
 pub const WINDOW_SIZE: (u32, u32) = (500, 300);

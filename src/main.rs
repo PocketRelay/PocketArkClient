@@ -23,7 +23,6 @@ pub mod ui;
 /// Application crate version string
 pub const APP_VERSION: &str = env!("CARGO_PKG_VERSION");
 
-//tcp.port == 42230 || tcp.port == 44325 || tcp.port == 443 || tcp.port == 10853
 fn main() {
     // Initialize logging
     env_logger::builder()
