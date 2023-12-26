@@ -10,20 +10,28 @@ env:
 jobs:
   build:
     strategy:
-      fail-fast: true
       matrix:
         os: [ubuntu-latest, windows-latest]
         include:
+          # Linux iced build
           - os: ubuntu-latest
             file: pocket-relay-client
             file_name: Ubuntu Build
+            feature: iced
+          # Windows iced build
           - os: windows-latest
             file: pocket-relay-client.exe
             file_name: Windows Build
+            feature: iced
+          # Windows native build
+          - os: windows-latest
+            file: pocket-relay-client.exe
+            file_name: Windows Native Build
+            feature: native
     runs-on: ${{ matrix.os }}
-
     steps:
       - uses: actions/checkout@v3
+      # OpenSSL dependency on windows
       - name: vcpkg build
         uses: johnwason/vcpkg-action@v5
         id: vcpkg
@@ -32,10 +40,13 @@ jobs:
           triplet: x64-windows-static
           token: ${{ github.token }}
         if: matrix.os == 'windows-latest'
+      # Building
       - name: Build Client
-        run: cargo build --verbose
+        run: cargo build --verbose --no-default-features --features ${{ matrix.feature }}
+      # Testing
       - name: Run tests
-        run: cargo test --verbose
+        run: cargo test --verbose --no-default-features --features ${{ matrix.feature }}
+      # Uploading builds
       - name: Upload artifact
         uses: actions/upload-artifact@v3
         with:
