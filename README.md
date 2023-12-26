@@ -20,7 +20,6 @@
 This is a client tool which allows Mass Effect Andromeda clients to connect to unofficial servers rather than the official EA servers. This tool allows players to play on Pocket Ark servers
 
 
-
 ## 📥 Downloads
 
 Download links for the client are not yet available as it is not yet released.
