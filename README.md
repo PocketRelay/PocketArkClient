@@ -73,7 +73,7 @@ In order to build the client using commands you will need to open the client sou
 
 
 ```shell
-cd pocket-relay-client
+cd pocket-ark-client
 ```
 
 > The above command will only work if you run it in the same place that you’ve cloned the repository to
