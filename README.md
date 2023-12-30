@@ -39,7 +39,7 @@ Guide for manually compiling the client executable from source
 
 ### Requirements
 
-- **Rust & Cargo** Rust version 1.70.0 or newer is required in order to compile the client you can install both of these using Rustup which you can install using the guide Here
+- **Rust & Cargo** Rust version 1.74.0 or newer is required in order to compile the client you can install both of these using Rustup which you can install using the guide Here
 - **Git** Git is required to clone the github repository to your system. You can ignore this step if you manually download the latest source archive from github directly Here
 
 ### OpenSSL on windows
